@@ -1,0 +1,7 @@
+{
+  "name": "VM Selector",
+  "uuid": "vm-selector@yoohey",
+  "description": "Quick launcher for KVM virtual machines via virt-viewer",
+  "shell-version": ["50"],
+  "version": 1
+}

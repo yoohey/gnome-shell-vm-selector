@@ -1,0 +1,49 @@
+.vm-selector-label {
+    font-weight: bold;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+.vm-header-label {
+    font-weight: bold;
+    font-size: 0.85em;
+    color: #888888;
+}
+
+.vm-running-item {
+    color: #a6e3a1; /* Catppuccin Green */
+}
+
+.vm-paused-item {
+    color: #f9e2af; /* Catppuccin Yellow */
+}
+
+.vm-stopped-item {
+    color: #a6adc8; /* Catppuccin Subtext */
+}
+
+
+.vm-subaction-container {
+    padding-top: 0px !important;
+    padding-bottom: 4px !important;
+}
+
+.vm-subaction-box {
+    padding-left: 24px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.vm-subaction-btn {
+    font-size: 0.82em;
+    padding: 4px 8px;
+    margin-right: 6px;
+    border-radius: 4px;
+    color: #cdd6f4;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.vm-subaction-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.2);
+}
