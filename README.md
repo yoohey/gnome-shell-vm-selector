@@ -24,7 +24,7 @@ On GNOME with Wayland, keys such as Super and Alt+Tab can be captured by the hos
 
 ## Known limitations
 
-- Only tested on NixOS so far. Commands are looked up in `PATH`, so Fedora, Ubuntu, etc. should work too, but this is not verified yet.
+- Tested on NixOS (GNOME Shell 50.5) and Fedora Workstation (GNOME Shell 50.0). Commands are looked up in `PATH`, so other distributions such as Ubuntu should work too, but they are not verified.
 - The connection URI is fixed to `qemu:///system`.
 - If you are not in the `libvirt` (or `libvirtd`) group, the extension does not poll in the background (virsh would ask for a password every 5 seconds). The top bar shows `VM !` and the menu explains what to do; "Try anyway" makes a single query.
 - The panel and menu text is English only.
