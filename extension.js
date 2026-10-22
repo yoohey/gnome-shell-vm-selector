@@ -53,9 +53,11 @@ function spawnDetached(argv) {
     }
 }
 
+// Returns the list of VMs, or null when virsh failed (e.g. no permission), so callers can tell
+// "no VMs" from "could not ask".
 async function getVmList() {
     const out = await runCapture([...VIRSH, 'list', '--all', '--name']);
-    if (out === null) return [];
+    if (out === null) return null;
     const names = out.split('\n').map(s => s.trim()).filter(s => s);
     return Promise.all(names.map(async name => {
         const state = await runCapture([...VIRSH, 'domstate', name]);
@@ -159,7 +161,7 @@ class VmIndicator extends PanelMenu.Button {
         if (this.menu.isOpen || !this._access) return;
         try {
             const vms = await getVmList();
-            if (this._destroyed) return;
+            if (this._destroyed || vms === null) return;
             const runningCount = vms.filter(v => v.state.toLowerCase().includes('running')).length;
             this._label.set_text(`VM ${runningCount}/${vms.length}`);
         } catch (e) {
@@ -192,10 +194,16 @@ class VmIndicator extends PanelMenu.Button {
         }
         const seq = ++this._seq;
         try {
-            const vms = await getVmList();
-            if (force && vms.length > 0) this._access = true;
+            let vms = await getVmList();
             // Discard if destroyed, or if a newer refresh has started
             if (this._destroyed || seq !== this._seq) return;
+            if (vms === null) {
+                // virsh failed. For a forced single try, keep showing the no-access help; otherwise show an empty list.
+                if (force) { this._showNoAccess(); return; }
+                vms = [];
+            } else if (force) {
+                this._access = true; // it worked (even with 0 VMs), so start normal polling
+            }
             this.menu.removeAll();
 
             const runningCount = vms.filter(v => v.state.toLowerCase().includes('running')).length;
