@@ -36,6 +36,15 @@ async function runCapture(argv) {
     }
 }
 
+// Is the user in a group that may manage qemu:///system? Without it, every virsh call makes polkit ask for a
+// password, so we must not poll in the background. (Debian-family older releases call the group "libvirtd".)
+async function hasLibvirtAccess() {
+    const out = await runCapture(['id', '-Gn']);
+    if (out === null) return true; // cannot tell: behave as before
+    const groups = out.trim().split(/\s+/);
+    return groups.includes('libvirt') || groups.includes('libvirtd') || groups.includes('root');
+}
+
 function spawnDetached(argv) {
     try {
         new Gio.Subprocess({ argv, flags: Gio.SubprocessFlags.NONE }).init(null);
@@ -130,16 +139,24 @@ class VmIndicator extends PanelMenu.Button {
         this._destroyed = false;
         this._seq = 0;
         this._timeoutIds = new Set();
+        this._access = false; // set by the first check; no background virsh until we know
 
-        this._refresh();
         this._pollId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => {
             this._updateCountsOnly();
             return GLib.SOURCE_CONTINUE;
         });
+        this._init2();
+    }
+
+    async _init2() {
+        const ok = await hasLibvirtAccess();
+        if (this._destroyed) return;
+        this._access = ok;
+        this._refresh();
     }
 
     async _updateCountsOnly() {
-        if (this.menu.isOpen) return;
+        if (this.menu.isOpen || !this._access) return;
         try {
             const vms = await getVmList();
             if (this._destroyed) return;
@@ -150,10 +167,33 @@ class VmIndicator extends PanelMenu.Button {
         }
     }
 
-    async _refresh() {
+    _showNoAccess() {
+        this._label.set_text('VM !');
+        this.menu.removeAll();
+        const msg = new PopupMenu.PopupMenuItem(
+            'You are not in the "libvirt" group, so virsh would ask for a password every time.', { reactive: false });
+        msg.label.style_class = 'vm-header-label';
+        this.menu.addMenuItem(msg);
+        const hint = new PopupMenu.PopupMenuItem(
+            'Run: sudo usermod -aG libvirt $USER   then log out and in again.', { reactive: false });
+        hint.label.style_class = 'vm-header-label';
+        this.menu.addMenuItem(hint);
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        const tryItem = new PopupMenu.PopupMenuItem('Try anyway (may ask for a password)');
+        // One query only; polling starts only if it actually returns VMs
+        tryItem.connect('activate', () => this._refresh(true));
+        this.menu.addMenuItem(tryItem);
+    }
+
+    async _refresh(force = false) {
+        if (!this._access && !force) {
+            this._showNoAccess();
+            return;
+        }
         const seq = ++this._seq;
         try {
             const vms = await getVmList();
+            if (force && vms.length > 0) this._access = true;
             // Discard if destroyed, or if a newer refresh has started
             if (this._destroyed || seq !== this._seq) return;
             this.menu.removeAll();

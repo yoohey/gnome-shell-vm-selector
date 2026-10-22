@@ -26,9 +26,18 @@ On GNOME with Wayland, keys such as Super and Alt+Tab can be captured by the hos
 
 - Only tested on NixOS so far. Commands are looked up in `PATH`, so Fedora, Ubuntu, etc. should work too, but this is not verified yet.
 - The connection URI is fixed to `qemu:///system`.
+- If you are not in the `libvirt` (or `libvirtd`) group, the extension does not poll in the background (virsh would ask for a password every 5 seconds). The top bar shows `VM !` and the menu explains what to do; "Try anyway" makes a single query.
 - The panel and menu text is English only.
 
 ## Install (manual)
+
+First make sure your user may manage libvirt, then log out and in again (otherwise the top bar shows `VM !`):
+
+```bash
+sudo usermod -aG libvirt $USER
+```
+
+Then:
 
 ```bash
 git clone https://github.com/yoohey/gnome-shell-vm-selector.git
@@ -37,7 +46,7 @@ cp gnome-shell-vm-selector/{metadata.json,extension.js,stylesheet.css} \
    ~/.local/share/gnome-shell/extensions/vm-selector@yoohey/
 ```
 
-Log out and log in again, then enable it:
+Log out and log in again (once more, so GNOME Shell sees the new extension), then enable it:
 
 ```bash
 gnome-extensions enable vm-selector@yoohey
