@@ -15,6 +15,23 @@
   - **右クリック**: 電源の操作（一時停止・再開・シャットダウン・強制停止・起動）を出します。
 - 一覧の最後に、Virtual Machine Manager（`virt-manager`）を開く項目があります。
 
+### 電源の操作（右クリック）
+
+VM を右クリックすると、その下に電源のボタンが出ます（もう一度右クリックすると隠れます）。ボタンは、VM の状態によって変わります。
+
+![実行中の 2 台の VM の電源の操作](docs/power-actions.png)
+
+| 状態 | ボタン |
+|---|---|
+| 実行中 | Pause（一時停止）、Shut down（シャットダウン）、Force off（強制停止） |
+| 一時停止中 | Resume（再開）、Force off |
+| 停止中 | Start (no screen)（画面なしで起動） |
+
+- **Pause** は、VM を止めます（`virsh suspend`）。メモリに残ったままで、**Resume** で続きから動きます。
+- **Shut down** は、ゲスト OS に電源を切るよう頼みます（`virsh shutdown`）。
+- **Force off** は、すぐに電源を切ります（`virsh destroy`）。ゲストの保存していないデータは失われます。
+- **Start (no screen)** は、窓を開かずに VM を起動します。左クリックなら、起動して画面も開きます。
+
 ## なぜ作ったか
 
 Wayland の GNOME では、`virt-manager` の画面に入っていても、Super キーや Alt+Tab がホスト側に取られることがあります。独立した SPICE クライアントの `virt-viewer` を全画面で使うと、キーを VM に渡しやすくなります。この拡張は、その `virt-viewer` を、トップバーから 1 クリックで開くためのものです。

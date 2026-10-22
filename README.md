@@ -15,6 +15,23 @@ A GNOME Shell extension that lets you pick a KVM (libvirt) virtual machine from 
   - **Right click**: show power actions (pause, resume, shut down, force off, start).
 - The last item of the list opens Virtual Machine Manager (`virt-manager`).
 
+### Power actions (right click)
+
+Right-click a VM to show its power buttons under it (right-click again to hide them). The buttons depend on the state of the VM:
+
+![Power actions of two running VMs](docs/power-actions.png)
+
+| State | Buttons |
+|---|---|
+| running | Pause, Shut down, Force off |
+| paused | Resume, Force off |
+| stopped | Start (no screen) |
+
+- **Pause** freezes the VM (`virsh suspend`). It stays in memory; **Resume** continues it.
+- **Shut down** asks the guest OS to power off (`virsh shutdown`).
+- **Force off** cuts the power at once (`virsh destroy`); unsaved data in the guest is lost.
+- **Start (no screen)** boots the VM without opening a window. A left click starts it *and* opens the screen.
+
 ## Why
 
 On GNOME with Wayland, keys such as Super and Alt+Tab can be captured by the host even while a `virt-manager` console has focus. A standalone SPICE client, `virt-viewer`, used fullscreen, passes keys to the VM much more reliably. This extension is a one-click launcher for `virt-viewer` from the top bar.
